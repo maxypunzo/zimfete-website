@@ -9,7 +9,7 @@ A static one-page site. No build step, no framework, no dependencies to install.
 - `script.js` — mobile menu toggle (vanilla JS)
 - `favicon.svg` — browser tab icon
 - `og-image.png` — the image shown when the site is shared on WhatsApp, Facebook, etc.
-- `images/` — project photos
+- `images/` — logo (`logo.png`, `logo-white.png` for the footer) and project photos
 - `robots.txt` — allows search engines to index the site
 
 ## Deploy to Vercel
@@ -31,8 +31,6 @@ Follow the prompts (link or create a project, keep the defaults — no framework
 ## Before you go live — update these
 
 - **Bank account number** in the footer of `index.html` — there are two different numbers across the documents you've shared (company profile vs. this site); confirm the correct one before publishing.
-- **Social links** — Instagram still points to a `#` placeholder in the footer; add the real URL once the page exists.
-- **Pig farming photo** — the Pig farming project card shows an icon placeholder; save a real photo as `images/pig-farming.jpg` and swap it in (see the TODO comment in `index.html`).
 - **Custom domain** — once deployed, add your domain (e.g. `zimfete.co.zw`) under Project Settings → Domains in Vercel.
 
 ## Making small edits later

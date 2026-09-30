@@ -71,12 +71,7 @@ svg{ display:block; }
   padding-top:14px; padding-bottom:14px;
 }
 .brand{ display:flex; flex-direction:column; text-decoration:none; line-height:1; gap:2px; }
-.brand-mark{ position:relative; display:inline-flex; align-items:center; padding-top:9px; }
-.brand-word{ font-family:var(--font-head); font-weight:800; font-size:1.5rem; color:var(--navy); letter-spacing:-0.01em; }
-/* Orange arc sits over the wordmark, as on the flyer */
-.brand-arc{ position:absolute; top:0; left:4%; width:92%; height:14px; overflow:visible; }
-.brand-arc path{ fill:none; stroke:var(--orange); stroke-width:4; stroke-linecap:round; vector-effect:non-scaling-stroke; }
-.brand-tag{ font-size:.72rem; color:var(--ink-soft); font-style:italic; }
+.brand-logo{ display:block; height:48px; width:auto; }
 
 .site-nav{ display:flex; align-items:center; gap:28px; }
 .site-nav ul{ display:flex; gap:24px; }
@@ -181,7 +176,6 @@ svg{ display:block; }
 .project-card{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:0 0 28px; text-align:center; overflow:hidden; }
 .project-card h3, .project-card p{ padding:0 24px; }
 .project-media{ display:block; width:100%; height:auto; aspect-ratio:3/2; object-fit:cover; margin-bottom:20px; background:var(--mist); }
-.project-media-placeholder{ display:flex; align-items:center; justify-content:center; }
 .project-card svg{ width:52px; height:52px; margin:0 auto 14px; }
 .project-card svg path, .project-card svg rect, .project-card svg circle, .project-card svg ellipse{
   fill:none; stroke:var(--navy); stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
@@ -212,13 +206,10 @@ svg{ display:block; }
 /* ---------- Footer ---------- */
 .site-footer{ background:var(--navy-ink); color:#cfd8ec; padding:64px 0 0; }
 .footer-grid{ display:grid; grid-template-columns:1.2fr .8fr 1fr 1fr; gap:32px; padding-bottom:40px; border-bottom:1px solid rgba(255,255,255,.12); }
-.footer-brand{ color:var(--white); font-size:1.5rem; }
-.footer-tag{ font-style:italic; color:#9fb0d1; margin:.2em 0 1.2em; }
+.footer-logo{ display:block; height:64px; width:auto; margin-bottom:1.2em; }
 .social-links{ display:flex; gap:12px; }
 .social-links a{ width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; }
 .social-links svg{ width:18px; height:18px; fill:#fff; }
-.icon-instagram{ fill:none !important; stroke:#fff; stroke-width:1.8; }
-.icon-instagram .dot{ fill:#fff !important; stroke:none; }
 .footer-nav h3, .footer-info h3{ color:var(--white); font-size:.95rem; margin-bottom:1em; }
 .footer-nav ul{ display:flex; flex-direction:column; gap:10px; }
 .footer-nav a{ text-decoration:none; color:#cfd8ec; }
