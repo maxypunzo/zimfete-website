@@ -62,9 +62,14 @@ svg{ display:block; }
 /* ---------- Header ---------- */
 .site-header{
   position:sticky; top:0; z-index:100;
+  border-bottom:1px solid var(--line);
+}
+/* Blur lives on a pseudo-element: backdrop-filter on the header itself would make it
+   the containing block for the fixed mobile nav, pushing the page wider than the screen */
+.site-header::before{
+  content:""; position:absolute; inset:0; z-index:-1;
   background:rgba(255,255,255,.92);
   backdrop-filter:saturate(160%) blur(8px);
-  border-bottom:1px solid var(--line);
 }
 .header-inner{
   display:flex; align-items:center; justify-content:space-between;
@@ -229,10 +234,10 @@ svg{ display:block; }
 
 @media (max-width: 720px){
   .site-nav{
-    position:fixed; inset:64px 0 0 auto; width:min(78vw,320px);
+    position:fixed; inset:77px 0 0 auto; width:min(78vw,320px);
     background:var(--white); flex-direction:column; align-items:flex-start;
     padding:28px 24px; gap:22px; box-shadow:-8px 0 24px rgba(20,30,60,.12);
-    transform:translateX(100%); transition:transform .25s ease; height:calc(100vh - 64px);
+    transform:translateX(100%); transition:transform .25s ease; height:calc(100vh - 77px);
   }
   .site-nav.is-open{ transform:translateX(0); }
   .site-nav ul{ flex-direction:column; gap:16px; }
@@ -241,8 +246,12 @@ svg{ display:block; }
   .service-grid{ grid-template-columns:1fr; }
   .membership-grid{ grid-template-columns:1fr; }
   .project-grid{ grid-template-columns:1fr; }
-  .location-grid{ grid-template-columns:1fr 1fr; }
+  .location-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
   .footer-grid{ grid-template-columns:1fr; }
   .hero-stats{ grid-template-columns:1fr 1fr; }
   .corner{ width:80px; height:80px; }
+}
+
+@media (max-width: 400px){
+  .location-grid{ grid-template-columns:1fr; }
 }
