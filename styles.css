@@ -71,11 +71,7 @@ svg{ display:block; }
   padding-top:14px; padding-bottom:14px;
 }
 .brand{ display:flex; flex-direction:column; text-decoration:none; line-height:1; gap:2px; }
-.brand-mark{ position:relative; display:inline-flex; align-items:center; }
-.brand-word{ font-family:var(--font-head); font-weight:800; font-size:1.5rem; color:var(--navy); letter-spacing:-0.01em; }
-.brand-arc{ width:52px; height:18px; margin-left:-8px; margin-top:-14px; }
-.brand-arc path{ fill:none; stroke:var(--orange); stroke-width:6; stroke-linecap:round; }
-.brand-tag{ font-size:.72rem; color:var(--ink-soft); font-style:italic; }
+.brand-logo{ display:block; height:48px; width:auto; }
 
 .site-nav{ display:flex; align-items:center; gap:28px; }
 .site-nav ul{ display:flex; gap:24px; }
@@ -177,7 +173,9 @@ svg{ display:block; }
 
 /* ---------- Projects ---------- */
 .project-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:40px; }
-.project-card{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:28px; text-align:center; }
+.project-card{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:0 0 28px; text-align:center; overflow:hidden; }
+.project-card h3, .project-card p{ padding:0 24px; }
+.project-media{ display:block; width:100%; height:auto; aspect-ratio:3/2; object-fit:cover; margin-bottom:20px; background:var(--mist); }
 .project-card svg{ width:52px; height:52px; margin:0 auto 14px; }
 .project-card svg path, .project-card svg rect, .project-card svg circle, .project-card svg ellipse{
   fill:none; stroke:var(--navy); stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
@@ -185,11 +183,16 @@ svg{ display:block; }
 
 /* ---------- Locations ---------- */
 .location-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:40px; }
-.location-card{ background:var(--cream); border-radius:var(--radius); padding:26px 22px; }
+.location-card{ background:var(--cream); border-radius:var(--radius); padding:26px 22px; transition:background-color .2s ease, color .2s ease; }
 .location-card h3{ margin:0; display:flex; align-items:center; gap:10px; }
 .location-card h3 span{ font-size:.68rem; background:var(--orange); color:#fff; padding:.2em .6em; border-radius:999px; font-weight:700; letter-spacing:.03em; }
-.location-card.is-hq{ background:var(--navy); }
-.location-card.is-hq h3, .location-card.is-hq p{ color:var(--white); }
+/* Blue highlight rests on HQ and follows the pointer across the grid */
+.location-card.is-hq, .location-card:hover{ background:var(--navy); }
+.location-card.is-hq h3, .location-card.is-hq p,
+.location-card:hover h3, .location-card:hover p{ color:var(--white); }
+.location-grid:hover .location-card.is-hq:not(:hover){ background:var(--cream); }
+.location-grid:hover .location-card.is-hq:not(:hover) h3{ color:var(--navy-ink); }
+.location-grid:hover .location-card.is-hq:not(:hover) p{ color:var(--ink-soft); }
 .location-card p{ margin:.5em 0 0; font-size:.9rem; }
 
 /* ---------- CTA band ---------- */
@@ -203,13 +206,10 @@ svg{ display:block; }
 /* ---------- Footer ---------- */
 .site-footer{ background:var(--navy-ink); color:#cfd8ec; padding:64px 0 0; }
 .footer-grid{ display:grid; grid-template-columns:1.2fr .8fr 1fr 1fr; gap:32px; padding-bottom:40px; border-bottom:1px solid rgba(255,255,255,.12); }
-.footer-brand{ color:var(--white); font-size:1.5rem; }
-.footer-tag{ font-style:italic; color:#9fb0d1; margin:.2em 0 1.2em; }
+.footer-logo{ display:block; height:64px; width:auto; margin-bottom:1.2em; }
 .social-links{ display:flex; gap:12px; }
 .social-links a{ width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; }
 .social-links svg{ width:18px; height:18px; fill:#fff; }
-.icon-instagram{ fill:none !important; stroke:#fff; stroke-width:1.8; }
-.icon-instagram .dot{ fill:#fff !important; stroke:none; }
 .footer-nav h3, .footer-info h3{ color:var(--white); font-size:.95rem; margin-bottom:1em; }
 .footer-nav ul{ display:flex; flex-direction:column; gap:10px; }
 .footer-nav a{ text-decoration:none; color:#cfd8ec; }

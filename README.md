@@ -9,6 +9,7 @@ A static one-page site. No build step, no framework, no dependencies to install.
 - `script.js` — mobile menu toggle (vanilla JS)
 - `favicon.svg` — browser tab icon
 - `og-image.png` — the image shown when the site is shared on WhatsApp, Facebook, etc.
+- `images/` — logo (`logo.png`, `logo-white.png` for the footer) and project photos
 - `robots.txt` — allows search engines to index the site
 
 ## Deploy to Vercel
@@ -30,7 +31,6 @@ Follow the prompts (link or create a project, keep the defaults — no framework
 ## Before you go live — update these
 
 - **Bank account number** in the footer of `index.html` — there are two different numbers across the documents you've shared (company profile vs. this site); confirm the correct one before publishing.
-- **Social links** — Facebook, Instagram and Twitter/X currently point to `#` placeholders in the footer; add the real URLs once the pages exist.
 - **Custom domain** — once deployed, add your domain (e.g. `zimfete.co.zw`) under Project Settings → Domains in Vercel.
 
 ## Making small edits later
