@@ -1,0 +1,15 @@
+# /etc/systemd/system/zimfete-assets.service
+[Unit]
+Description=ZimFete Asset Financing
+After=network.target mariadb.service
+
+[Service]
+User=zimfete
+WorkingDirectory=/opt/zimfete-assets
+EnvironmentFile=/opt/zimfete-assets/zimfete-assets.env
+ExecStart=/usr/bin/java -Xms256m -Xmx768m -jar /opt/zimfete-assets/asset-financing.jar
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

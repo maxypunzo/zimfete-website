@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:assetfinance-${random.uuid};MODE=MariaDB;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+zimfete:
+  fineract:
+    webhook-token: test-token
+  security:
+    provider: in-memory
+  storage:
+    photo-directory: ${java.io.tmpdir}/zimfete-test-photos
+  sync:
+    cron: "-"

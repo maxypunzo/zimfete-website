@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: zimfete-asset-financing
+  datasource:
+    url: ${DB_URL:jdbc:h2:file:./data/assetfinance;MODE=MariaDB;DATABASE_TO_LOWER=TRUE}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: true
+    properties:
+      hibernate.type.preferred_instant_jdbc_type: TIMESTAMP
+      hibernate.jdbc.time_zone: UTC
+  servlet:
+    multipart:
+      max-file-size: 8MB
+      max-request-size: 10MB
+
+server:
+  port: ${PORT:8090}
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+zimfete:
+  fineract:
+    base-url: ${FINERACT_URL:http://localhost:8080/fineract-provider/api/v1}
+    tenant-id: ${FINERACT_TENANT:default}
+    username: ${FINERACT_USERNAME:mifos}
+    password: ${FINERACT_PASSWORD:password}
+    # IDs from YOUR Fineract installation (see README, "Fineract setup").
+    asset-deposit-product-id: ${ASSET_DEPOSIT_PRODUCT_ID:1}
+    asset-loan-product-id: ${ASSET_LOAN_PRODUCT_ID:1}
+    supplier-payment-type-id: ${SUPPLIER_PAYMENT_TYPE_ID:1}
+    asset-loan-fund-id: ${ASSET_LOAN_FUND_ID:}
+    webhook-token: ${FINERACT_WEBHOOK_TOKEN:}
+  policy:
+    deposit-percent: 50
+    queue-rule: FIRST_QUALIFIED
+    forecast-window-months: 6
+    head-office-id: 1
+  security:
+    provider: ${AUTH_PROVIDER:fineract}
+    # Fineract role name -> module role. Create these roles in Mifos (Admin > Users > Roles).
+    role-mapping:
+      "[Asset Finance Officer]": OFFICER
+      "[Asset Finance Manager]": MANAGER
+      "[Super user]": ADMIN
+  storage:
+    photo-directory: ${PHOTO_DIR:./data/photos}
+  sync:
+    cron: "0 0 * * * *"

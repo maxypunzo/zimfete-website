@@ -1,0 +1,4 @@
+# Local development without Fineract logins: java -jar ... --spring.profiles.active=dev
+zimfete:
+  security:
+    provider: in-memory
