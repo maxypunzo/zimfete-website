@@ -224,3 +224,7 @@ These come from the model as described. The system won't fix them, but it should
 4. Assign member numbers and start the data clean-up.
 5. Shortlist 2 or 3 vendors/partners (section 5), ask for demos against **your** cycle: a member who saves, takes a soft loan, opens an asset account, reaches 50% and gets a borehole.
 6. Agree budget and timeline with the board.
+
+---
+
+See also: [Mifos X / Fineract fit-gap analysis](mifos-gap-analysis.md).
