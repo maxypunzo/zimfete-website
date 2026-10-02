@@ -23,6 +23,9 @@ public interface FineractClient {
 
     SavingsAccountInfo getSavingsAccount(long savingsAccountId);
 
+    /** Collects a charge that is due on a savings account (e.g. the opening fee) from its balance. */
+    void paySavingsCharge(long savingsAccountId, long accountChargeId, BigDecimal amount, LocalDate date);
+
     /** Withdraws from the deposit account to pay the supplier. Returns the transaction id. */
     long withdrawToSupplier(long savingsAccountId, BigDecimal amount, LocalDate date, String note);
 
@@ -51,7 +54,11 @@ public interface FineractClient {
     }
 
     record SavingsAccountInfo(long id, long clientId, String currency, BigDecimal balance,
-                              List<SavingsTransaction> transactions) {
+                              List<SavingsTransaction> transactions, List<AccountCharge> charges) {
+    }
+
+    /** A charge on a savings account: {@code id} is the account-charge id, {@code chargeId} the charge definition. */
+    record AccountCharge(long id, long chargeId, BigDecimal outstanding) {
     }
 
     record SavingsTransaction(long id, LocalDate date, BigDecimal amount, boolean deposit,

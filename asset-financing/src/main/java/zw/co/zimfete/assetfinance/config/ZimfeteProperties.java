@@ -27,10 +27,15 @@ public record ZimfeteProperties(Fineract fineract, Policy policy, Security secur
             long supplierPaymentTypeId,
             /** Optional Fineract fund the asset loans are tagged with (e.g. "Retained profit"). */
             Long assetLoanFundId,
-            /** Shared secret Fineract hooks must send as ?token=... */
+            /** Shared secret that is part of the hook URL: /api/webhooks/fineract/{token}/ */
             String webhookToken,
             /** "live" (real Fineract) or "demo" (built-in pretend Fineract for training; never with real members). */
-            String mode) {
+            String mode,
+            /**
+             * Optional savings charge (type "Specified due date") for the account opening fee. It is attached
+             * when the account is opened and collected from the member's deposits once they cover it.
+             */
+            Long openingFeeChargeId) {
 
         public boolean isDemo() {
             return "demo".equals(mode);

@@ -7,10 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import tools.jackson.databind.JsonNode;
@@ -19,10 +20,13 @@ import zw.co.zimfete.assetfinance.config.ZimfeteProperties;
 
 /**
  * Receives Fineract "Web" hooks so progress updates the moment a deposit or repayment is posted.
- * In Mifos: Admin → System → Manage Hooks → Web, payload URL
- * {@code https://<this-server>/api/webhooks/fineract?token=<zimfete.fineract.webhook-token>}, events
- * SAVINGSACCOUNT DEPOSIT / WITHDRAWAL / UNDOTRANSACTION and LOAN REPAYMENT / UNDOTRANSACTION.
- * The hourly sync catches anything a hook misses.
+ * Payload URL in Fineract: {@code http://<this-server>:8090/api/webhooks/fineract/<webhook-token>/}
+ * (deploy/setup-fineract.py registers it). Events: SAVINGSACCOUNT DEPOSIT / WITHDRAWAL / UNDOTRANSACTION
+ * and LOAN REPAYMENT. The hourly sync catches anything a hook misses.
+ *
+ * The token is part of the path because Fineract's hook client (Retrofit) needs the URL to end with
+ * "/" and drops any query string when it posts. Fineract also sends a GET to the URL when the hook
+ * is created, to check it is reachable.
  */
 @RestController
 public class FineractWebhookController {
@@ -38,26 +42,29 @@ public class FineractWebhookController {
         this.token = configured == null ? new byte[0] : configured.getBytes(StandardCharsets.UTF_8);
     }
 
-    @PostMapping("/api/webhooks/fineract")
-    public ResponseEntity<Void> receive(@RequestParam(required = false) String token,
+    @GetMapping({ "/api/webhooks/fineract/{token}", "/api/webhooks/fineract/{token}/" })
+    public ResponseEntity<Void> ping(@PathVariable String token) {
+        return validToken(token) ? ResponseEntity.ok().build() : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    @PostMapping({ "/api/webhooks/fineract/{token}", "/api/webhooks/fineract/{token}/" })
+    public ResponseEntity<Void> receive(@PathVariable String token,
                                         @RequestHeader(name = "X-Fineract-Entity", required = false) String entity,
                                         @RequestBody(required = false) JsonNode body) {
-        if (this.token.length == 0 || token == null
-                || !MessageDigest.isEqual(this.token, token.getBytes(StandardCharsets.UTF_8))) {
+        if (!validToken(token)) {
+            log.warn("Rejected a webhook call with a wrong token");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+        log.debug("Fineract hook {}: {}", entity, body);
         if (body == null) {
             return ResponseEntity.accepted().build();
         }
         try {
-            Long savingsId = id(body, "savingsId");
-            Long loanId = id(body, "loanId");
-            if ("SAVINGSACCOUNT".equalsIgnoreCase(entity) && savingsId == null) {
-                savingsId = id(body, "resourceId");
-            }
-            if ("LOAN".equalsIgnoreCase(entity) && loanId == null) {
-                loanId = id(body, "resourceId");
-            }
+            // Fineract 1.15 sends {"entityName":..., "actionName":..., "request":{...}, "response":{"savingsId"/"loanId",
+            // "resourceId" (the transaction id)}}; older versions sent the response fields at the top level.
+            JsonNode response = body.has("response") ? body.path("response") : body;
+            Long savingsId = id(response, "savingsId");
+            Long loanId = id(response, "loanId");
             if (savingsId != null) {
                 sync.syncBySavingsAccount(savingsId);
             }
@@ -69,6 +76,11 @@ public class FineractWebhookController {
             log.warn("Webhook sync failed ({}): {}", entity, e.getMessage());
         }
         return ResponseEntity.accepted().build();
+    }
+
+    private boolean validToken(String given) {
+        return this.token.length > 0 && given != null
+                && MessageDigest.isEqual(this.token, given.getBytes(StandardCharsets.UTF_8));
     }
 
     private static Long id(JsonNode body, String field) {

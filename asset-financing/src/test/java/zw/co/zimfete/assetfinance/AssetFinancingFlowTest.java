@@ -76,12 +76,18 @@ class AssetFinancingFlowTest {
         assertThat((String) JsonPath.read(opened, "$.status")).isEqualTo("SAVING");
         assertThat((Double) JsonPath.read(opened, "$.depositTarget")).isEqualTo(2000.0);
 
-        // 2. Member deposits in Fineract; refresh moves them into the queue.
+        // 2. Member deposits in Fineract; refresh collects the $10 opening fee and moves them into the queue.
+        fineract.deposit(savingsId, "5", LocalDate.of(2026, 7, 20));
+        call("officer", post("/api/applications/" + appId + "/refresh"), null, status().isOk(),
+                jsonPath("$.application.depositedAmount").value(5.0));
+        assertThat(fineract.postings).noneMatch(p -> p.startsWith("pay-fee:")); // not enough to cover the fee yet
         fineract.deposit(savingsId, "1500", LocalDate.of(2026, 8, 1));
         fineract.deposit(savingsId, "600", LocalDate.of(2026, 9, 15));
         call("officer", post("/api/applications/" + appId + "/refresh"), null, status().isOk(),
                 jsonPath("$.application.status").value("QUALIFIED"),
-                jsonPath("$.progress.percentComplete").value(105.0));
+                jsonPath("$.application.depositedAmount").value(2095.0),
+                jsonPath("$.progress.percentComplete").value(104.7));
+        assertThat(fineract.postings).containsOnlyOnce("pay-fee:" + savingsId + ":10.00");
 
         call("officer", get("/api/queue"), null, status().isOk(),
                 jsonPath("$[0].applicationId").value(appId),
@@ -118,20 +124,23 @@ class AssetFinancingFlowTest {
         // 5. Manager converts: deposit applied + loan for the balance, in Fineract.
         String converted = call("manager", post("/api/applications/" + appId + "/convert"), null, status().isOk(),
                 jsonPath("$.status").value("REPAYING"),
-                jsonPath("$.depositApplied").value(2100.0),
-                jsonPath("$.financedAmount").value(1900.0));
+                jsonPath("$.depositApplied").value(2095.0),
+                jsonPath("$.financedAmount").value(1905.0));
         long loanId = ((Number) JsonPath.read(converted, "$.loanId")).longValue();
-        assertThat(fineract.postings).containsSubsequence("withdraw:" + savingsId + ":2100",
-                "create-loan:" + loanId + ":1900.00", "approve-loan:" + loanId, "disburse-loan:" + loanId + ":1900.00");
+        assertThat(fineract.postings).containsSubsequence("withdraw:" + savingsId + ":2095.00",
+                "create-loan:" + loanId + ":1905.00", "approve-loan:" + loanId, "disburse-loan:" + loanId + ":1905.00");
         call("manager", get("/api/purchase-orders/" + po), null, status().isOk(),
                 jsonPath("$.status").value("COMPLETED"));
 
         // 6. Loan repaid in Fineract → hook → paid off and ownership transferred.
         fineract.closeLoan(loanId);
-        mvc.perform(post("/api/webhooks/fineract?token=wrong").contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(post("/api/webhooks/fineract/wrong/").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"loanId\":" + loanId + "}")).andExpect(status().isForbidden());
-        mvc.perform(post("/api/webhooks/fineract?token=test-token").header("X-Fineract-Entity", "LOAN")
-                .contentType(MediaType.APPLICATION_JSON).content("{\"resourceId\":" + loanId + "}"))
+        // Fineract checks the URL with a GET when the hook is created.
+        mvc.perform(get("/api/webhooks/fineract/test-token/")).andExpect(status().isOk());
+        mvc.perform(post("/api/webhooks/fineract/test-token/").header("X-Fineract-Entity", "LOAN")
+                .contentType(MediaType.APPLICATION_JSON).content(hookPayload("LOAN", "REPAYMENT",
+                        "\"loanId\":" + loanId + ",\"resourceId\":987")))
                 .andExpect(status().isAccepted());
 
         call("officer", get("/api/applications/" + appId), null, status().isOk(),
@@ -208,20 +217,30 @@ class AssetFinancingFlowTest {
         long appId = id(opened);
         long savingsId = ((Number) JsonPath.read(opened, "$.savingsAccountId")).longValue();
 
-        fineract.deposit(savingsId, "2000", LocalDate.of(2026, 10, 1));
-        mvc.perform(post("/api/webhooks/fineract?token=test-token").header("X-Fineract-Entity", "SAVINGSACCOUNT")
-                .contentType(MediaType.APPLICATION_JSON).content("{\"savingsId\":" + savingsId + ",\"resourceId\":9}"))
+        fineract.deposit(savingsId, "2010", LocalDate.of(2026, 10, 1));
+        mvc.perform(post("/api/webhooks/fineract/test-token/").header("X-Fineract-Entity", "SAVINGSACCOUNT")
+                .contentType(MediaType.APPLICATION_JSON).content(hookPayload("SAVINGSACCOUNT", "DEPOSIT",
+                        "\"savingsId\":" + savingsId + ",\"resourceId\":9")))
                 .andExpect(status().isAccepted());
 
         call("officer", get("/api/applications/" + appId), null, status().isOk(),
                 jsonPath("$.status").value("QUALIFIED"));
     }
 
+    /** The shape Fineract 1.15 actually posts (captured from a real server). */
+    private static String hookPayload(String entity, String action, String responseFields) {
+        return """
+                {"createdByName":"mifos","request":{"transactionAmount":5.0,"locale":"en"},"clientId":3,
+                 "createdBy":1,"officeId":2,"entityName":"%s","response":{"clientId":3,%s,"changes":{}},
+                 "createdByFullName":"App Administrator","actionName":"%s","timestamp":"2026-10-02T16:17:53Z"}
+                """.formatted(entity, responseFields, action);
+    }
+
     private long qualifiedApplication(long clientId, LocalDate depositDate) throws Exception {
         String opened = call("officer", post("/api/applications"),
                 "{\"clientId\":" + clientId + ",\"catalogueItemId\":" + boreholeId + "}", status().isCreated());
         long appId = id(opened);
-        fineract.deposit(((Number) JsonPath.read(opened, "$.savingsAccountId")).longValue(), "2000", depositDate);
+        fineract.deposit(((Number) JsonPath.read(opened, "$.savingsAccountId")).longValue(), "2010", depositDate);
         call("officer", post("/api/applications/" + appId + "/refresh"), null, status().isOk(),
                 jsonPath("$.application.status").value("QUALIFIED"));
         // Make qualification order follow the order of calls in the test.

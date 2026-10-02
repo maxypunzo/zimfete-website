@@ -4,6 +4,7 @@ spring:
 zimfete:
   fineract:
     webhook-token: test-token
+    opening-fee-charge-id: 77
   security:
     provider: in-memory
   storage:

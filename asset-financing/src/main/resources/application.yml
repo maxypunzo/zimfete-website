@@ -47,6 +47,7 @@ zimfete:
     asset-loan-product-id: ${ASSET_LOAN_PRODUCT_ID:1}
     supplier-payment-type-id: ${SUPPLIER_PAYMENT_TYPE_ID:1}
     asset-loan-fund-id: ${ASSET_LOAN_FUND_ID:}
+    opening-fee-charge-id: ${ASSET_OPENING_FEE_CHARGE_ID:}
     webhook-token: ${FINERACT_WEBHOOK_TOKEN:}
     # live = real Fineract; demo = pretend Fineract for training (requires AUTH_PROVIDER=in-memory)
     mode: ${FINERACT_MODE:live}

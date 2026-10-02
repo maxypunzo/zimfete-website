@@ -84,6 +84,14 @@ public class FineractRestClient implements FineractClient {
         body.put("productId", config.assetDepositProductId());
         body.put("externalId", externalId);
         body.put("submittedOnDate", format(date));
+        if (config.openingFeeChargeId() != null) {
+            // Fineract does not copy a product's charges onto accounts opened through the API, so the
+            // opening fee is attached here. It is a "Specified due date" charge: an activation charge
+            // would stop Fineract from activating an account that has no money in it yet.
+            JsonNode charge = get("/charges/{id}", config.openingFeeChargeId());
+            body.put("charges", List.of(Map.of("chargeId", config.openingFeeChargeId(),
+                    "amount", decimal(charge.path("amount")), "dueDate", format(date))));
+        }
         long id = post("/savingsaccounts", body).path("savingsId").asLong();
 
         Map<String, Object> approve = dated(date);
@@ -98,7 +106,7 @@ public class FineractRestClient implements FineractClient {
 
     @Override
     public SavingsAccountInfo getSavingsAccount(long savingsAccountId) {
-        JsonNode node = get("/savingsaccounts/{id}?associations=transactions", savingsAccountId);
+        JsonNode node = get("/savingsaccounts/{id}?associations=transactions,charges", savingsAccountId);
         List<SavingsTransaction> transactions = new ArrayList<>();
         for (JsonNode tx : node.path("transactions")) {
             JsonNode type = tx.path("transactionType");
@@ -110,9 +118,24 @@ public class FineractRestClient implements FineractClient {
                     type.path("withdrawal").asBoolean(),
                     tx.path("reversed").asBoolean()));
         }
+        List<AccountCharge> charges = new ArrayList<>();
+        for (JsonNode c : node.path("charges")) {
+            if (c.path("isActive").asBoolean(true)) {
+                charges.add(new AccountCharge(c.path("id").asLong(), c.path("chargeId").asLong(),
+                        decimal(c.path("amountOutstanding"))));
+            }
+        }
         return new SavingsAccountInfo(node.path("id").asLong(), node.path("clientId").asLong(),
                 node.path("currency").path("code").asString(),
-                decimal(node.path("summary").path("accountBalance")), transactions);
+                decimal(node.path("summary").path("accountBalance")), transactions, charges);
+    }
+
+    @Override
+    public void paySavingsCharge(long savingsAccountId, long accountChargeId, BigDecimal amount, LocalDate date) {
+        Map<String, Object> body = dated(date);
+        body.put("amount", amount);
+        body.put("dueDate", format(date));
+        post("/savingsaccounts/" + savingsAccountId + "/charges/" + accountChargeId + "?command=paycharge", body);
     }
 
     @Override

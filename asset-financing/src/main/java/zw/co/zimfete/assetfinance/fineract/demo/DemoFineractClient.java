@@ -118,7 +118,13 @@ public class DemoFineractClient implements FineractClient {
     @Override
     public synchronized SavingsAccountInfo getSavingsAccount(long savingsAccountId) {
         Savings s = savingsAccount(savingsAccountId);
-        return new SavingsAccountInfo(savingsAccountId, s.clientId, "USD", s.balance, List.copyOf(s.transactions));
+        return new SavingsAccountInfo(savingsAccountId, s.clientId, "USD", s.balance, List.copyOf(s.transactions),
+                List.of());
+    }
+
+    @Override
+    public void paySavingsCharge(long savingsAccountId, long accountChargeId, BigDecimal amount, LocalDate date) {
+        // Demo accounts carry no charges.
     }
 
     @Override

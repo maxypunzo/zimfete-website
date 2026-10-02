@@ -28,7 +28,7 @@ Demo mode runs the backend against a built-in pretend Fineract, with sample memb
 ```bash
 # terminal 1: backend (Java 21)
 cd ../asset-financing
-mvn spring-boot:run -Dspring-boot.run.profiles=demo
+./mvnw spring-boot:run -Dspring-boot.run.profiles=demo
 
 # terminal 2: this app (Node 20+)
 npm install

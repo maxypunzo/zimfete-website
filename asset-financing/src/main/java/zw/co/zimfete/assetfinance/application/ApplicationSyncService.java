@@ -1,5 +1,6 @@
 package zw.co.zimfete.assetfinance.application;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.EnumSet;
@@ -33,6 +34,7 @@ public class ApplicationSyncService {
     private final TransactionTemplate tx;
     private final Clock clock;
     private final int windowMonths;
+    private final Long openingFeeChargeId;
 
     public ApplicationSyncService(AssetApplicationRepository applications, FineractClient fineract,
                                   MemberNotifier notifier, ApplicationEventPublisher events, TransactionTemplate tx,
@@ -44,12 +46,14 @@ public class ApplicationSyncService {
         this.tx = tx;
         this.clock = clock;
         this.windowMonths = properties.policy().forecastWindowMonths();
+        this.openingFeeChargeId = properties.fineract().openingFeeChargeId();
     }
 
     /** Must be called inside a transaction. Returns the latest progress for open applications. */
     public Progress sync(AssetApplication app) {
         if (app.getStatus().isOpen()) {
-            SavingsAccountInfo account = fineract.getSavingsAccount(app.getFineractSavingsAccountId());
+            SavingsAccountInfo account = collectOpeningFee(
+                    fineract.getSavingsAccount(app.getFineractSavingsAccountId()));
             Progress progress = Progress.calculate(app.getDepositTarget(), account.balance(), account.transactions(),
                     LocalDate.now(clock), windowMonths);
             if (app.recordBalance(progress, clock.instant())) {
@@ -65,6 +69,27 @@ public class ApplicationSyncService {
             }
         }
         return null;
+    }
+
+    /**
+     * Collects the opening fee from the deposits once they cover it, so the balance (and the member's
+     * progress) counts only money toward the asset. Returns the account as it is afterwards.
+     */
+    private SavingsAccountInfo collectOpeningFee(SavingsAccountInfo account) {
+        if (openingFeeChargeId == null) {
+            return account;
+        }
+        boolean paid = false;
+        BigDecimal balance = account.balance();
+        for (FineractClient.AccountCharge charge : account.charges()) {
+            if (charge.chargeId() == openingFeeChargeId && charge.outstanding().signum() > 0
+                    && balance.compareTo(charge.outstanding()) >= 0) {
+                fineract.paySavingsCharge(account.id(), charge.id(), charge.outstanding(), LocalDate.now(clock));
+                balance = balance.subtract(charge.outstanding());
+                paid = true;
+            }
+        }
+        return paid ? fineract.getSavingsAccount(account.id()) : account;
     }
 
     public void syncById(long applicationId) {

@@ -34,12 +34,12 @@ class FineractRestClientTest {
         RestClient.Builder builder = RestClient.builder();
         server = MockRestServiceServer.bindTo(builder).build();
         client = new FineractRestClient(builder, new ZimfeteProperties.Fineract(BASE, "default", "svc", "secret",
-                7, 8, 9, 3L, "token", "live"));
+                7, 8, 9, 3L, "token", "live", 12L));
     }
 
     @Test
     void readsSavingsAccountWithFineractDateArrays() {
-        server.expect(requestTo(BASE + "/savingsaccounts/42?associations=transactions"))
+        server.expect(requestTo(BASE + "/savingsaccounts/42?associations=transactions,charges"))
                 .andExpect(header("Fineract-Platform-TenantId", "default"))
                 .andExpect(header("Authorization", "Basic c3ZjOnNlY3JldA=="))
                 .andRespond(withSuccess("""
@@ -49,10 +49,13 @@ class FineractRestClientTest {
                            {"id":9,"date":[2026,9,15],"amount":600,"reversed":false,
                             "transactionType":{"deposit":true,"withdrawal":false}},
                            {"id":8,"date":[2026,8,1],"amount":1550.5,"reversed":false,
-                            "transactionType":{"deposit":true,"withdrawal":false}}]}
+                            "transactionType":{"deposit":true,"withdrawal":false}}],
+                         "charges":[{"id":3,"chargeId":12,"amountOutstanding":10.0,"isActive":true}]}
                         """, MediaType.APPLICATION_JSON));
 
         var account = client.getSavingsAccount(42);
+        assertThat(account.charges()).singleElement()
+                .satisfies(c -> assertThat(c.outstanding()).isEqualByComparingTo("10"));
 
         assertThat(account.balance()).isEqualByComparingTo("2150.50");
         assertThat(account.currency()).isEqualTo("USD");
@@ -63,8 +66,13 @@ class FineractRestClientTest {
     }
 
     @Test
-    void opensApprovesAndActivatesDepositAccount() {
+    void opensApprovesAndActivatesDepositAccountWithOpeningFee() {
+        server.expect(requestTo(BASE + "/charges/12"))
+                .andRespond(withSuccess("{\"id\":12,\"amount\":10.0}", MediaType.APPLICATION_JSON));
         server.expect(requestTo(BASE + "/savingsaccounts")).andExpect(method(HttpMethod.POST))
+                .andExpect(jsonPath("$.charges[0].chargeId").value(12))
+                .andExpect(jsonPath("$.charges[0].amount").value(10.0))
+                .andExpect(jsonPath("$.charges[0].dueDate").value("01 October 2026"))
                 .andExpect(jsonPath("$.productId").value(7))
                 .andExpect(jsonPath("$.externalId").value("AF-ABC"))
                 .andExpect(jsonPath("$.submittedOnDate").value("01 October 2026"))

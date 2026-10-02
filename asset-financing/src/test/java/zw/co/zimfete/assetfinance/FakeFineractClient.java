@@ -24,10 +24,15 @@ public class FakeFineractClient implements FineractClient {
     private final Set<String> failOnce = new HashSet<>();
     private final AtomicLong ids = new AtomicLong(1000);
 
+    /** Charge definition id of the opening fee, matching zimfete.fineract.opening-fee-charge-id in tests. */
+    public static final long OPENING_FEE_CHARGE = 77;
+    public static final BigDecimal OPENING_FEE = new BigDecimal("10.00");
+
     public static final class Savings {
         public long clientId;
         public String externalId;
         public BigDecimal balance = BigDecimal.ZERO;
+        public BigDecimal feeOutstanding = OPENING_FEE;
         public final List<SavingsTransaction> transactions = new ArrayList<>();
     }
 
@@ -101,7 +106,20 @@ public class FakeFineractClient implements FineractClient {
     @Override
     public SavingsAccountInfo getSavingsAccount(long savingsAccountId) {
         Savings s = savings.get(savingsAccountId);
-        return new SavingsAccountInfo(savingsAccountId, s.clientId, "USD", s.balance, List.copyOf(s.transactions));
+        return new SavingsAccountInfo(savingsAccountId, s.clientId, "USD", s.balance, List.copyOf(s.transactions),
+                List.of(new AccountCharge(9000 + savingsAccountId, OPENING_FEE_CHARGE, s.feeOutstanding)));
+    }
+
+    @Override
+    public void paySavingsCharge(long savingsAccountId, long accountChargeId, BigDecimal amount, LocalDate date) {
+        Savings s = savings.get(savingsAccountId);
+        if (s.balance.compareTo(amount) < 0) {
+            throw new FineractException("balance going negative");
+        }
+        s.balance = s.balance.subtract(amount);
+        s.feeOutstanding = s.feeOutstanding.subtract(amount);
+        s.transactions.add(new SavingsTransaction(ids.incrementAndGet(), date, amount, false, false, false));
+        postings.add("pay-fee:" + savingsAccountId + ":" + amount.toPlainString());
     }
 
     @Override
