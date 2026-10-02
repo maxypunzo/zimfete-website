@@ -72,6 +72,14 @@ public class RegisterService {
     }
 
     @Transactional(readOnly = true)
+    public FinancedAsset forApplication(long applicationId, AppUser user) {
+        FinancedAsset asset = assets.findByApplicationId(applicationId)
+                .orElseThrow(() -> new NotFoundException("Asset for application", applicationId));
+        officeAccess.check(user, asset.getOfficeId());
+        return asset;
+    }
+
+    @Transactional(readOnly = true)
     public List<FinancedAsset> search(Ownership ownership, Long officeId, Long clientId, AppUser user) {
         return assets.search(ownership, officeAccess.scope(user, officeId), clientId);
     }

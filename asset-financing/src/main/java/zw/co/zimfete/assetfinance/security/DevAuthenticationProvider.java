@@ -16,7 +16,7 @@ public class DevAuthenticationProvider implements AuthenticationProvider {
 
     private static final long HEAD_OFFICE = 1;
     private static final long MARONDERA = 2;
-    private static final long HWEDZA = 3;
+    private static final long HWEDZA = 4;
 
     private static final Map<String, AppUser> USERS = Map.of(
             "officer", new AppUser("officer", MARONDERA, 10L, EnumSet.of(Role.OFFICER)),

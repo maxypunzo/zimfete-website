@@ -55,6 +55,29 @@ public class FineractRestClient implements FineractClient {
     }
 
     @Override
+    public List<Office> listOffices() {
+        List<Office> offices = new ArrayList<>();
+        for (JsonNode o : get("/offices")) {
+            offices.add(new Office(o.path("id").asLong(), o.path("name").asString()));
+        }
+        return offices;
+    }
+
+    @Override
+    public List<ClientSummary> searchClients(String query) {
+        List<ClientSummary> clients = new ArrayList<>();
+        for (JsonNode c : get("/search?query={q}&resource=clients&exactMatch=false", query)) {
+            JsonNode status = c.path("entityStatus");
+            clients.add(new ClientSummary(c.path("entityId").asLong(), c.path("entityName").asString(),
+                    c.path("entityAccountNo").asString(), c.path("parentId").asLong(),
+                    c.path("parentName").asString(), c.path("entityMobileNo").asString(null),
+                    "clientStatusType.active".equals(status.path("code").asString())
+                            || "Active".equalsIgnoreCase(status.path("value").asString())));
+        }
+        return clients;
+    }
+
+    @Override
     public long openAssetDepositAccount(long clientId, String externalId, LocalDate date) {
         Map<String, Object> body = dated(date);
         body.put("clientId", clientId);

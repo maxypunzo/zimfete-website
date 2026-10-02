@@ -65,8 +65,9 @@ public class ProcurementController {
     @GetMapping("/purchase-orders")
     public List<PurchaseOrderView> search(@RequestParam(required = false) PurchaseOrderStatus status,
                                           @RequestParam(required = false) Long officeId,
+                                          @RequestParam(required = false) Long applicationId,
                                           @AuthenticationPrincipal AppUser user) {
-        return service.search(status, officeId, user).stream().map(PurchaseOrderView::of).toList();
+        return service.search(status, officeId, applicationId, user).stream().map(PurchaseOrderView::of).toList();
     }
 
     @GetMapping("/purchase-orders/{id}")

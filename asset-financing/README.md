@@ -28,7 +28,7 @@ See `../docs/digitization-roadmap.md` and `../docs/mifos-gap-analysis.md` for th
 | Asset register, inspections, repossession; ownership transferred automatically when the loan closes | `/api/assets`, `/api/assets/{id}/inspections`, `/api/assets/{id}/repossess` |
 | Fineract hooks: update progress the moment a deposit or repayment is posted | `POST /api/webhooks/fineract?token=...` |
 
-Interactive API documentation is at `/swagger-ui.html`.
+Interactive API documentation is at `/swagger-ui.html`. The staff screens are in [`../staff-web`](../staff-web).
 
 ### Rules built in
 
@@ -50,7 +50,7 @@ Steps 1 + 4 together equal the full price paid to the supplier. Each step is sav
 
 ## Login
 
-Staff log in with their **Mifos/Fineract username and password** (HTTP Basic). The module calls Fineract's `/authentication` endpoint and maps Fineract role names to module roles in `application.yml`:
+Staff log in with their **Mifos/Fineract username and password**. The module checks them with Fineract's `/authentication` endpoint and maps Fineract role names to module roles in `application.yml`:
 
 ```yaml
 zimfete.security.role-mapping:
@@ -59,7 +59,25 @@ zimfete.security.role-mapping:
   "[Super user]": ADMIN
 ```
 
-Create the two roles in Mifos (Admin → Users → Manage Roles) and give them to the right users. **Use HTTPS in front of this service**, because Basic auth sends the password with every request.
+Create the two roles in Mifos (Admin → Users → Manage Roles) and give them to the right users.
+
+There are two ways to authenticate:
+
+- **Staff web app:** `POST /api/auth/login` once. This sets an HttpOnly, SameSite=Strict session cookie (30-minute idle timeout). Every change must also send the `X-XSRF-TOKEN` header, copied from the `XSRF-TOKEN` cookie (CSRF protection). `GET /api/me` returns the signed-in user; `POST /api/auth/logout` ends the session.
+- **Scripts / Swagger UI:** HTTP Basic on every request.
+
+The server never sends a Basic challenge, so browsers never show a password pop-up. **Serve it over HTTPS only**: the session cookie is `Secure` by default (`COOKIE_SECURE`).
+
+## Demo mode
+
+`--spring.profiles.active=demo` runs the module for training and trying things out, with no Fineract and no real money:
+
+- a pretend Fineract held in memory, with ZimFete's 8 locations and 17 sample members;
+- sample assets, suppliers and members at different stages;
+- built-in users `officer`, `officer2`, `manager`, `manager2` and `admin` (password = username);
+- extra endpoints that stand in for Mifos teller actions (`/api/demo/...`).
+
+Everything is lost on restart. Demo mode refuses to start unless the built-in users are also enabled, so it cannot be switched on against real Fineract logins.
 
 ## Fineract setup (once, in Mifos)
 
@@ -85,7 +103,7 @@ Create the two roles in Mifos (Admin → Users → Manage Roles) and give them t
 Requires Java 21 and Maven.
 
 ```bash
-mvn test                                    # 22 tests, Fineract replaced by a fake
+mvn test                                    # 29 tests, Fineract replaced by a fake
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
@@ -104,7 +122,7 @@ The `dev` profile uses an H2 file database in `./data` and built-in users (passw
 3. Install Java 21 (`sudo apt install openjdk-21-jre-headless`). Create user `zimfete` and the folder `/opt/zimfete-assets/photos`.
 4. Copy `deploy/zimfete-assets.env.example` to `/opt/zimfete-assets/zimfete-assets.env`, fill it in, and `chmod 600` it.
 5. Install `deploy/zimfete-assets.service` into `/etc/systemd/system/`, then run `sudo systemctl enable --now zimfete-assets`.
-6. Put it behind the same HTTPS reverse proxy as Mifos (e.g. Nginx: `location /assets/ { proxy_pass http://127.0.0.1:8090/; }`). Open only 443 in the Oracle security list; keep 8090 and 3306 closed to the internet.
+6. Put it behind HTTPS with Nginx, on the same address as the staff web app: see `../staff-web/deploy/nginx.conf`. Open only 80/443 in the Oracle security list; keep 8090 and 3306 closed to the internet.
 7. Back up the `zimfete_assets` database and the photos folder together with Fineract's database.
 
 The schema is created and upgraded automatically by Flyway on start-up (`src/main/resources/db/migration`).
@@ -113,7 +131,6 @@ A `Dockerfile` is included if you prefer containers (it works on ARM/Ampere).
 
 ## Not built yet
 
-- Staff screens. For now, use Swagger UI or Postman. A web UI (or screens added to the Mifos web-app) is the next step.
 - SMS/WhatsApp to members: `MemberNotifier` currently only logs; plug in a local SMS gateway.
 - Offline mobile capture for officers in low-signal areas.
 - Multi-currency (ZiG): v1 assumes the catalogue currency matches the deposit and loan products (USD).

@@ -2,3 +2,8 @@
 zimfete:
   security:
     provider: in-memory
+server:
+  servlet:
+    session:
+      cookie:
+        secure: false

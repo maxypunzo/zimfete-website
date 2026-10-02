@@ -13,6 +13,11 @@ public interface FineractClient {
 
     ClientInfo getClient(long clientId);
 
+    List<Office> listOffices();
+
+    /** Finds members by name, account number, external id or phone. */
+    List<ClientSummary> searchClients(String query);
+
     /** Opens, approves and activates an Asset Deposit savings account. Returns its id. */
     long openAssetDepositAccount(long clientId, String externalId, LocalDate date);
 
@@ -34,6 +39,13 @@ public interface FineractClient {
 
     /** Verifies a user's credentials and returns their office and roles. */
     Optional<AuthenticatedUser> authenticate(String username, String password);
+
+    record Office(long id, String name) {
+    }
+
+    record ClientSummary(long id, String displayName, String accountNo, long officeId, String officeName,
+                         String mobileNo, boolean active) {
+    }
 
     record ClientInfo(long id, String displayName, long officeId, Long staffId, boolean active) {
     }

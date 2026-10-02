@@ -28,7 +28,13 @@ public record ZimfeteProperties(Fineract fineract, Policy policy, Security secur
             /** Optional Fineract fund the asset loans are tagged with (e.g. "Retained profit"). */
             Long assetLoanFundId,
             /** Shared secret Fineract hooks must send as ?token=... */
-            String webhookToken) {
+            String webhookToken,
+            /** "live" (real Fineract) or "demo" (built-in pretend Fineract for training; never with real members). */
+            String mode) {
+
+        public boolean isDemo() {
+            return "demo".equals(mode);
+        }
     }
 
     public record Policy(

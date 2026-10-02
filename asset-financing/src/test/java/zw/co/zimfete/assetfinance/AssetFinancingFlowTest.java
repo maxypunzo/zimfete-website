@@ -55,7 +55,7 @@ class AssetFinancingFlowTest {
     void setUp() throws Exception {
         mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
         fineract.addClient(MARONDERA_MEMBER, "Tendai Moyo", 2);
-        fineract.addClient(HWEDZA_MEMBER, "Rudo Chikwanha", 3);
+        fineract.addClient(HWEDZA_MEMBER, "Rudo Chikwanha", 4);
         fineract.addClient(MARONDERA_MEMBER_2, "Farai Ncube", 2);
 
         boreholeId = id(call("admin", post("/api/catalogue/items"), """
@@ -151,6 +151,10 @@ class AssetFinancingFlowTest {
         call("officer", get("/api/applications/" + hwedzaApp), null, status().isForbidden());
         call("officer", get("/api/applications"), null, status().isOk(), jsonPath("$.length()").value(0));
         call("manager", get("/api/applications"), null, status().isOk(), jsonPath("$.length()").value(1));
+        call("officer", get("/api/members?query=rudo"), null, status().isOk(), jsonPath("$.length()").value(0));
+        call("officer2", get("/api/members?query=rudo"), null, status().isOk(),
+                jsonPath("$[0].id").value(HWEDZA_MEMBER));
+        call("manager", get("/api/members?query=a"), null, status().isConflict());
         call("officer", post("/api/catalogue/items"), """
                 {"code":"X","name":"X","category":"OTHER","standardCost":1,"currency":"USD"}""",
                 status().isForbidden());

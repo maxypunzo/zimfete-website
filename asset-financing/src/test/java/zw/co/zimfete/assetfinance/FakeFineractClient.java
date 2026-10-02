@@ -74,6 +74,20 @@ public class FakeFineractClient implements FineractClient {
     }
 
     @Override
+    public List<Office> listOffices() {
+        return List.of(new Office(1, "Head Office"), new Office(2, "Marondera"), new Office(4, "Hwedza"));
+    }
+
+    @Override
+    public List<ClientSummary> searchClients(String query) {
+        return clients.values().stream()
+                .filter(c -> c.displayName().toLowerCase().contains(query.toLowerCase()))
+                .map(c -> new ClientSummary(c.id(), c.displayName(), "000" + c.id(), c.officeId(), "Office " + c.officeId(),
+                        null, c.active()))
+                .toList();
+    }
+
+    @Override
     public long openAssetDepositAccount(long clientId, String externalId, LocalDate date) {
         long id = ids.incrementAndGet();
         Savings s = new Savings();

@@ -34,7 +34,7 @@ class FineractRestClientTest {
         RestClient.Builder builder = RestClient.builder();
         server = MockRestServiceServer.bindTo(builder).build();
         client = new FineractRestClient(builder, new ZimfeteProperties.Fineract(BASE, "default", "svc", "secret",
-                7, 8, 9, 3L, "token"));
+                7, 8, 9, 3L, "token", "live"));
     }
 
     @Test
@@ -125,6 +125,24 @@ class FineractRestClientTest {
         assertThat(user.officeId()).isEqualTo(2);
         assertThat(user.staffId()).isEqualTo(10L);
         assertThat(user.roles()).containsExactly("Asset Finance Officer");
+    }
+
+    @Test
+    void searchesClientsThroughFineractSearchApi() {
+        server.expect(requestTo(BASE + "/search?query=moyo&resource=clients&exactMatch=false"))
+                .andRespond(withSuccess("""
+                        [{"entityId":101,"entityAccountNo":"000000101","entityName":"Tendai Moyo",
+                          "entityType":"CLIENT","parentId":2,"parentName":"Marondera",
+                          "entityMobileNo":"0771234567",
+                          "entityStatus":{"id":300,"code":"clientStatusType.active","value":"Active"}}]
+                        """, MediaType.APPLICATION_JSON));
+
+        var clients = client.searchClients("moyo");
+
+        assertThat(clients).hasSize(1);
+        assertThat(clients.getFirst().officeId()).isEqualTo(2);
+        assertThat(clients.getFirst().officeName()).isEqualTo("Marondera");
+        assertThat(clients.getFirst().active()).isTrue();
     }
 
     @Test

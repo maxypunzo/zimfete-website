@@ -121,7 +121,7 @@ public class ProcurementService {
     }
 
     @Transactional(readOnly = true)
-    public List<PurchaseOrder> search(PurchaseOrderStatus status, Long officeId, AppUser user) {
-        return orders.search(status, officeAccess.scope(user, officeId));
+    public List<PurchaseOrder> search(PurchaseOrderStatus status, Long officeId, Long applicationId, AppUser user) {
+        return orders.search(status, officeAccess.scope(user, officeId), applicationId);
     }
 }

@@ -20,6 +20,15 @@ spring:
 server:
   port: ${PORT:8090}
   forward-headers-strategy: framework
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        name: ZFSESSION
+        http-only: true
+        same-site: strict
+        # Must be true on the server (HTTPS). Set COOKIE_SECURE=false only for local http testing.
+        secure: ${COOKIE_SECURE:true}
 
 management:
   endpoints:
@@ -39,6 +48,8 @@ zimfete:
     supplier-payment-type-id: ${SUPPLIER_PAYMENT_TYPE_ID:1}
     asset-loan-fund-id: ${ASSET_LOAN_FUND_ID:}
     webhook-token: ${FINERACT_WEBHOOK_TOKEN:}
+    # live = real Fineract; demo = pretend Fineract for training (requires AUTH_PROVIDER=in-memory)
+    mode: ${FINERACT_MODE:live}
   policy:
     deposit-percent: 50
     queue-rule: FIRST_QUALIFIED

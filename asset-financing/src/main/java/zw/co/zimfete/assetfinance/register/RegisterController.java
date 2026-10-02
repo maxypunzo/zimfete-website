@@ -92,6 +92,11 @@ public class RegisterController {
                 r.deliveredOn(), r.memberAcknowledged(), r.notes(), user));
     }
 
+    @GetMapping("/applications/{applicationId}/asset")
+    public AssetView forApplication(@PathVariable long applicationId, @AuthenticationPrincipal AppUser user) {
+        return AssetView.of(service.forApplication(applicationId, user));
+    }
+
     @GetMapping("/assets")
     public List<AssetView> search(@RequestParam(required = false) Ownership ownership,
                                   @RequestParam(required = false) Long officeId,

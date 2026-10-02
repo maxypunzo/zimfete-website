@@ -1,0 +1,15 @@
+# Training/demo: pretend Fineract + built-in users + sample data. --spring.profiles.active=demo
+# Never point this at a database that holds real members.
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:h2:mem:zimfete-demo;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1}
+zimfete:
+  fineract:
+    mode: demo
+  security:
+    provider: in-memory
+server:
+  servlet:
+    session:
+      cookie:
+        secure: ${COOKIE_SECURE:false}

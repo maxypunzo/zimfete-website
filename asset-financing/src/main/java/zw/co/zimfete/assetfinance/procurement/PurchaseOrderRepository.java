@@ -18,6 +18,8 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
             select p from PurchaseOrder p
             where (:status is null or p.status = :status)
               and (:officeId is null or p.application.officeId = :officeId)
+              and (:applicationId is null or p.application.id = :applicationId)
             order by p.id desc""")
-    List<PurchaseOrder> search(@Param("status") PurchaseOrderStatus status, @Param("officeId") Long officeId);
+    List<PurchaseOrder> search(@Param("status") PurchaseOrderStatus status, @Param("officeId") Long officeId,
+                               @Param("applicationId") Long applicationId);
 }
