@@ -3,6 +3,10 @@ document.addEventListener('DOMContentLoaded', function () {
   var nav = document.getElementById('siteNav');
 
   if (toggle && nav) {
+    function closeMenu() {
+      nav.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
     toggle.addEventListener('click', function () {
       var isOpen = nav.classList.toggle('is-open');
       toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
@@ -10,9 +14,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     nav.querySelectorAll('a').forEach(function (link) {
       link.addEventListener('click', function () {
-        nav.classList.remove('is-open');
-        toggle.setAttribute('aria-expanded', 'false');
+        closeMenu();
       });
     });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && nav.classList.contains('is-open')) {
+        closeMenu();
+        toggle.focus();
+      }
+    });
+    document.addEventListener('click', function (event) {
+      if (!nav.contains(event.target) && !toggle.contains(event.target)) closeMenu();
+    });
+    window.matchMedia('(max-width: 720px)').addEventListener('change', closeMenu);
   }
 });
