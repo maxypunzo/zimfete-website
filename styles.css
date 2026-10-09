@@ -74,8 +74,8 @@ svg{ display:block; }
 .brand{ display:flex; flex-direction:column; text-decoration:none; line-height:1; gap:2px; }
 .brand-logo{ display:block; height:48px; width:auto; }
 
-.site-nav{ display:flex; align-items:center; gap:28px; }
-.site-nav ul{ display:flex; gap:24px; }
+.site-nav{ display:flex; align-items:center; gap:20px; }
+.site-nav ul{ display:flex; gap:16px; }
 .site-nav a{ text-decoration:none; font-weight:500; color:var(--ink); font-size:.96rem; }
 .site-nav a:hover{ color:var(--navy); }
 .nav-cta{ padding:.55em 1.2em !important; }
@@ -159,6 +159,10 @@ svg{ display:block; }
 .purpose-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; margin-top:40px; }
 .purpose-card{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:32px; }
 .purpose-card p:last-child{ margin-bottom:0; }
+.purpose-section{ background:var(--cream); }
+.purpose-card{ border-top:4px solid var(--orange); }
+.purpose-card h3{ font-size:1.6rem; }
+.purpose-motto{ color:var(--orange-dark); font-weight:600; }
 
 /* ---------- Membership ---------- */
 .membership-grid{ display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:40px; }
@@ -198,6 +202,12 @@ svg{ display:block; }
 .location-grid:hover .location-card.is-hq:not(:hover) h3{ color:var(--navy-ink); }
 .location-grid:hover .location-card.is-hq:not(:hover) p{ color:var(--ink-soft); }
 .location-card p{ margin:.5em 0 0; font-size:.9rem; }
+.branch-actions{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:18px; }
+.branch-action{ display:inline-flex; align-items:center; gap:8px; padding:9px 12px; border:1px solid var(--line); border-radius:10px; background:var(--white); color:var(--navy-ink); text-decoration:none; font-size:.88rem; font-weight:600; }
+.branch-action svg{ width:18px; height:18px; flex-shrink:0; fill:currentColor; }
+.branch-action.whatsapp{ color:#22643b; }
+.branch-action:hover{ background:var(--mist); }
+.branch-action:focus-visible{ outline-offset:3px; }
 
 /* ---------- CTA band ---------- */
 .cta-band{ position:relative; background:var(--navy); padding:100px 0 76px; overflow:hidden; text-align:center; }
@@ -234,7 +244,7 @@ svg{ display:block; }
   .project-grid{ grid-template-columns:repeat(3,1fr); }
 }
 
-@media (max-width: 720px){
+@media (max-width: 1100px){
   .site-nav{
     position:fixed; inset:100% 0 auto auto; width:min(78vw,320px);
     background:var(--white); flex-direction:column; align-items:flex-start;
@@ -246,7 +256,9 @@ svg{ display:block; }
   .site-nav.is-open{ transform:translateX(0); visibility:visible; pointer-events:auto; }
   .site-nav ul{ flex-direction:column; gap:16px; }
   .nav-toggle{ display:flex; }
+}
 
+@media (max-width: 720px){
   .service-grid{ grid-template-columns:1fr; }
   .membership-grid{ grid-template-columns:1fr; }
   .purpose-grid{ grid-template-columns:1fr; }

@@ -26,6 +26,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('click', function (event) {
       if (!nav.contains(event.target) && !toggle.contains(event.target)) closeMenu();
     });
-    window.matchMedia('(max-width: 720px)').addEventListener('change', closeMenu);
+    window.matchMedia('(max-width: 1100px)').addEventListener('change', closeMenu);
   }
 });
