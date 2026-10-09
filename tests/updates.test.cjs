@@ -1,3 +1,6 @@
+const adminHtml=require('node:fs').readFileSync('admin/index.html','utf8');
+const adminScript=adminHtml.match(/<script src="([^"]+)"/)[1];
+for(const route of ['/admin','/admin/'])require('node:assert/strict').equal(new URL(adminScript,'https://example.com'+route).pathname,'/admin/admin.js');
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 for(const file of ['script.js','updates.js','admin/admin.js','api/updates.js'])new vm.Script(fs.readFileSync(file,'utf8'),{filename:file});
 const html=fs.readFileSync('index.html','utf8');for(const id of ['membership','community','updates'])assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1);
