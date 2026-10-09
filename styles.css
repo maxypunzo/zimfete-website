@@ -272,3 +272,23 @@ svg{ display:block; }
   .location-grid{ grid-template-columns:1fr; }
   .footer-logo{ max-width:100%; height:auto; width:154px; }
 }
+
+/* News, programs and staff editor */
+section[id]{scroll-margin-top:100px}
+.updates-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:28px}
+.update-filters{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0}
+.update-filters button,.admin-entry{font:inherit;padding:10px 18px;border:1px solid var(--line);border-radius:12px;background:var(--white);color:var(--navy);cursor:pointer}
+.update-filters button[aria-pressed="true"]{background:var(--navy);color:white}
+.update-card{min-width:0;overflow-wrap:anywhere;border-top:4px solid var(--orange)}
+.update-card time{display:block;color:var(--ink-soft);margin-bottom:12px}
+.update-card summary{cursor:pointer;color:var(--navy);font-weight:600;margin:18px 0}
+.update-card details p{white-space:pre-wrap}
+.update-poster{display:block;width:100%;max-height:480px;object-fit:contain;border-radius:10px;margin:0 0 20px;background:var(--mist)}
+.admin-wrap{max-width:1050px}
+.admin-layout{display:grid;grid-template-columns:1fr 2fr;gap:32px;margin-top:24px}
+.admin-wrap label{display:block;font-weight:600;margin:16px 0}
+.admin-wrap input:not([type="hidden"]),.admin-wrap select,.admin-wrap textarea{display:block;width:100%;font:inherit;padding:12px;border:1px solid #aab7c9;border-radius:8px;margin-top:6px}
+.admin-entry{display:block;width:100%;text-align:left;margin:12px 0}
+.admin-wrap button{cursor:pointer;font:inherit}
+[hidden]{display:none!important}
+@media(max-width:720px){.updates-grid,.admin-layout{grid-template-columns:1fr}}
